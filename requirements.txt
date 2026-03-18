@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+alembic
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+shioaji[speed]
+python-telegram-bot
+python-dotenv
+httpx
+pydantic-settings
+psycopg2-binary
+asyncpg
