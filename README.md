@@ -5,16 +5,17 @@ StockHelm is a private trading console and paper trading system for Taiwan finan
 ## Features
 
 - **Real-time Market Data**: Powered by Shioaji (SinoPac API).
-- **Paper Trading Engine**: Simulate buys and sells with persistent state in SQLite.
+- **Paper Trading Engine**: Simulate buys and sells with persistent state in PostgreSQL.
 - **Telegram Integration**: Query quotes and manage watchlists via Telegram commands.
 - **Web Dashboard**: Modern, minimal interface to track positions, orders, and PnL.
 - **Security Focused**: No live trading capabilities, no broker secrets exposed to the frontend, and strict Telegram allowlisting.
+- **Audit-First**: Comprehensive event logging for all trading activities.
 
 ## Architecture
 
 - **Backend**: FastAPI (Python)
-- **Database**: SQLite (via SQLModel)
-- **Market Data**: Shioaji API
+- **Database**: PostgreSQL (via SQLModel & Alembic)
+- **Market Data**: Shioaji API (Broker-neutral abstraction layer)
 - **Telegram**: python-telegram-bot
 - **Frontend**: Vanilla JS + Tailwind CSS
 
@@ -30,6 +31,7 @@ StockHelm is a private trading console and paper trading system for Taiwan finan
 ### Prerequisites
 
 - Python 3.11+
+- PostgreSQL Database
 - Shioaji API Key & Secret (SinoPac account)
 - Telegram Bot Token (from @BotFather)
 
@@ -47,12 +49,18 @@ StockHelm is a private trading console and paper trading system for Taiwan finan
    ```
 
 3. **Configure environment**:
-   Copy `.env.example` to `.env` and fill in your credentials.
+   Copy `.env.example` to `.env` and fill in your credentials, including the `DATABASE_URL` for PostgreSQL.
    ```bash
    cp .env.example .env
    ```
 
-4. **Run the application**:
+4. **Run Migrations**:
+   Set up your database schema using Alembic.
+   ```bash
+   python3 -m alembic upgrade head
+   ```
+
+5. **Run the application**:
    ```bash
    python main.py
    ```
@@ -69,6 +77,26 @@ docker-compose up -d
 - `/quote <symbol>`: Get a concise quote summary.
 - `/watch <symbol>`: Add a symbol to your watchlist.
 - `/unwatch <symbol>`: Remove a symbol from your watchlist.
+- `/audit <limit>`: View recent activity logs (default: 10).
+
+## Database & Migrations
+
+StockHelm uses Alembic for database migrations to maintain schema integrity across updates.
+
+### Common Migration Tasks
+
+1.  **Generate a new migration**:
+    ```bash
+    python3 -m alembic revision --autogenerate -m "description of changes"
+    ```
+2.  **Apply migrations**:
+    ```bash
+    python3 -m alembic upgrade head
+    ```
+
+## Security & Audit
+
+Every significant action (orders, fills, subscriptions, cancellations) is logged in the `eventlog` table for auditing purposes. This "Event-Log First" design ensures that even if the app's state is reset, a full audit trail of user intent and engine actions remains. You can view these logs via the Telegram `/audit` command.
 
 ## Intentionally Not Implemented in v1
 
@@ -78,21 +106,6 @@ docker-compose up -d
 - Options trading (v1 focus: Stocks & Futures).
 - Mobile App (v1 is web-only).
 
-## Database & Migrations
+## License
 
-StockHelm uses PostgreSQL and Alembic for database migrations.
-
-### Running Migrations
-
-1.  **Generate a new migration**:
-    ```bash
-    python3 -m alembic revision --autogenerate -m "description"
-    ```
-2.  **Apply migrations**:
-    ```bash
-    python3 -m alembic upgrade head
-    ```
-
-## Security & Audit
-
-Every significant action (orders, fills, subscriptions) is logged in the `event_log` table for auditing purposes. You can view these logs via the Telegram `/audit` command.
+MIT
