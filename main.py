@@ -10,7 +10,19 @@ import logging
 import asyncio
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+import os
+log_dir = "logs"
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[
+        logging.FileHandler(os.path.join(log_dir, "stockhelm.log")),
+        logging.StreamHandler()
+    ]
+)
 logger = logging.getLogger(__name__)
 
 @asynccontextmanager

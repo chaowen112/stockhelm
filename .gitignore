@@ -162,14 +162,12 @@ cython_debug/
 *.sqlite
 *.sqlite-journal
 
-# OS generated files
+# os specific
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+
+# logs
+/logs/
+*.log
 
 # Certificates and Keys
 *.p12
