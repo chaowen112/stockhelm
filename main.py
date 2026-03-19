@@ -34,8 +34,9 @@ async def lifespan(app: FastAPI):
     await paper_engine.load_pending_orders()
     
     # Start Telegram bot
-    from telegram.bot import run_bot
+    from telegram_bot.bot import run_bot
     asyncio.create_task(run_bot())
+
     
     # Subscribe to existing watchlist symbols
     from sqlmodel import Session, select
@@ -64,12 +65,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Import and include routers
-from api import auth, quotes, watchlist, paper
-app.include_router(auth.router, prefix="/auth", tags=["auth"])
-app.include_router(quotes.router, prefix="/quotes", tags=["quotes"])
-app.include_router(watchlist.router, prefix="/watchlist", tags=["watchlist"])
-app.include_router(paper.router, prefix="/paper", tags=["paper"])
+# Import and include routers using absolute imports to avoid namespace collision with shioaji.api
+from api.auth import router as auth_router
+from api.quotes import router as quotes_router
+from api.watchlist import router as watchlist_router
+from api.paper import router as paper_router
+
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(quotes_router, prefix="/quotes", tags=["quotes"])
+app.include_router(watchlist_router, prefix="/watchlist", tags=["watchlist"])
+app.include_router(paper_router, prefix="/paper", tags=["paper"])
 
 # Static files
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
