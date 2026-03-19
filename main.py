@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from storage.db import init_db
-from broker.shioaji_client import shioaji_client
+from broker.shioaji_client import shioaji_broker
 from paper.engine import paper_engine
 from config import settings
 import logging
@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting up StockHelm...")
     init_db()
-    shioaji_client.login()
+    shioaji_broker.login()
     await paper_engine.load_pending_orders()
     
     # Start Telegram bot
@@ -44,14 +44,14 @@ async def lifespan(app: FastAPI):
     with Session(db_engine) as session:
         watchlist = session.exec(select(Watchlist)).all()
         for item in watchlist:
-            shioaji_client.subscribe(item.symbol_code)
+            shioaji_broker.subscribe(item.symbol_code)
             logger.info(f"Subscribed to {item.symbol_code}")
     
     yield
     # Shutdown
     logger.info("Shutting down StockHelm...")
-    if shioaji_client.is_logged_in:
-        shioaji_client.api.logout()
+    if shioaji_broker.is_logged_in:
+        shioaji_broker.logout()
 
 app = FastAPI(title="StockHelm", lifespan=lifespan)
 

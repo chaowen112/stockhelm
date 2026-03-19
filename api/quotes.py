@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Dict
 from marketdata.quote_store import quote_store, Quote
-from broker.shioaji_client import shioaji_client
+from broker.shioaji_client import shioaji_broker
 from api.auth import get_current_user
 from storage.models import User
 
@@ -12,7 +12,7 @@ async def get_quote(symbol: str, current_user: User = Depends(get_current_user))
     quote = quote_store.get_quote(symbol)
     if not quote:
         # Try to get a snapshot if not subscribed
-        snapshot = shioaji_client.get_snapshot(symbol)
+        snapshot = shioaji_broker.get_snapshot(symbol)
         if snapshot:
             # Mock a quote from snapshot
             return Quote(
